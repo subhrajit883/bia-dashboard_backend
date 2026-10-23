@@ -409,9 +409,29 @@ export const updateStudent = async (req, res) => {
     error.statusCode = 403;
     throw error;
   }
-  const allowed = req.user.role === "admin"
-    ? ["name", "email", "phone", "alternativePhone", "address", "age", "enrolledCourse", "enrolledCourses", "gender", "isActive", "dateOfAdmission", "assignedCounsellor", "totalFees", "s_id", "password"]
-    : ["email", "alternativePhone", "address"];
+  // const allowed = req.user.role === "admin"
+  //   ? ["name", "email", "phone", "alternativePhone", "address", "age", "enrolledCourse", "enrolledCourses", "gender", "isActive", "dateOfAdmission", "assignedCounsellor", "totalFees", "s_id", "password"]
+  //   : ["email", "alternativePhone", "address"];
+
+  
+const allowed = [
+  "name",
+  "email",
+  "phone",
+  "alternativePhone",
+  "address",
+  "age",
+  "enrolledCourse",
+  "enrolledCourses",
+  "gender",
+  "isActive",
+  "dateOfAdmission",
+  "assignedCounsellor",
+  "totalFees",
+  "s_id",
+  "password",
+];
+
 
   for (const key of allowed) {
     if (req.body[key] !== undefined) {

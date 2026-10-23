@@ -23,10 +23,12 @@ export const createTemplate = async (req, res) => {
 };
 
 export const getTemplates = async (req, res) => {
-  const filter = req.user.role === "admin"
-    ? {}
-    : { $or: [{ createdBy: req.user._id }, { isActive: true, isDraft: false }] };
-  const data = await EmailTemplate.find(filter).sort({ createdAt: -1 });
+  const filter = 
+  // req.user.role === "admin"
+  //   ? {}
+  //   :
+    { $or: [{ createdBy: req.user._id }, { isActive: true, isDraft: false }] };
+  const data = await EmailTemplate.find(filter).sort({ createdAt: -1 }).populate("createdBy", "name email username").populate("updatedBy", "name email username");
   res.json({ success: true, count: data.length, data });
 };
 
@@ -150,7 +152,9 @@ export const sendCandidateEmail = async (req, res) => {
       phone: target.phone,
       course: target.course,
       s_id: target.s_id,
-      counsellorName: req.user.name || ""
+      counsellorName: req.user.name || "",
+      counsellorEmail: req.user.email || "",
+      counsellorPhone: req.user.phone || ""
     };
     const personalizedSubject = subject.replace(/{{(\w+)}}/g, (_, key) => values[key] || "");
     const personalizedBody = body.replace(/{{(\w+)}}/g, (_, key) => values[key] || "");
@@ -182,3 +186,18 @@ export const sendCandidateEmail = async (req, res) => {
   res.json({ success: true, message: "Email process completed.", count: results.length, data: results });
 };
 
+export const getEmailLogs = async (req, res) => {
+  const filter = req.user.role === "admin" ? {} : { sentBy: req.user._id };
+  const page = Math.max(1, Number(req.query.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit || 25)));
+  const [data, total] = await Promise.all([
+    EmailLog.find(filter)
+      .populate("template", "title")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    EmailLog.countDocuments(filter)
+  ]);
+
+  res.json({ success: true, total, page, pages: Math.ceil(total / limit), data });
+};

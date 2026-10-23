@@ -64,9 +64,10 @@ export const registerAccount = async (req, res) => {
 
 
 export const login = async (req, res) => {
-  const { email, password, role } = req.body;
-  if (!email || !password || !role) {
-    const error = new Error("Email, password and role are required.");
+  const { email, username, password, role } = req.body;
+  const identifier = role === "counsellor" ? username || email : email;
+  if (!identifier || !password || !role) {
+    const error = new Error("Email, password and role are required. Counsellors may use either their username or email.");
     error.statusCode = 400;
     throw error;
   }
@@ -76,9 +77,12 @@ export const login = async (req, res) => {
     error.statusCode = 400;
     throw error;
   }
+  const normalizedIdentifier = identifier.trim().toLowerCase();
   const lookup = role === "student"
-    ? { s_id: email.trim().toUpperCase() }
-    : { email: email.toLowerCase() };
+    ? { s_id: normalizedIdentifier.toUpperCase() }
+    : role === "counsellor"
+      ? { $or: [{ email: normalizedIdentifier }, { username: normalizedIdentifier }] }
+      : { email: normalizedIdentifier };
   const user = await Model.findOne(lookup).select("+password");
   if (!user || !(await user.comparePassword(password))) {
     const error = new Error("The email or password you entered is incorrect.");
