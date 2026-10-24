@@ -28,8 +28,9 @@ app.use(helmet());
 
 const allowedOrigins = (
   process.env.FRONTEND_URL ||
-  "http://localhost:5173,http://192.168.1.29:5173"
+  "http://localhost:5173,http://192.168.1.29:5173,http://192.168.1.7:5173"
 )
+// 192.168.1.7
   .split(",")
   .map((origin) => origin.trim());
 
@@ -39,6 +40,8 @@ app.use(
     credentials: true,
   })
 );
+
+
 
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));

@@ -5,7 +5,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary.js";
 
 const imageMaxSize = 200 * 1024;
-const pdfMaxSize = 1024 * 1024;
+const pdfMaxSize = 200 * 1024;
 
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -18,6 +18,7 @@ const storage = new CloudinaryStorage({
     const safeName = file.originalname.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9.-]/g, "_");
     return {
       folder: "academy-management/documents",
+      
       resource_type: isPdf ? "raw" : "image",
       public_id: `${Date.now()}-${safeName}${isPdf ? ".pdf" : ""}`
     };

@@ -40,7 +40,7 @@ const errorHandler = (err, req, res, next) => {
     statusCode = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
     code = "FILE_UPLOAD_ERROR";
     message = err.code === "LIMIT_FILE_SIZE"
-      ? "Images must be 200 KB or smaller; PDFs must be 1 MB or smaller."
+      ? "Image and pdf must be 200 KB or smaller;"
       : `File upload failed: ${err.message}`;
   }
 

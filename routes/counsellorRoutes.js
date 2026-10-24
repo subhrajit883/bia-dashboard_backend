@@ -1,7 +1,7 @@
 import express from "express";
 import protect from "../middlewares/authMiddleware.js";
 import authorize from "../middlewares/roleMiddleware.js";
-import { getAllActiveCounsellors, getMyProfile, updateMyProfile, getAllCounsellors, getCounsellorById, getCounsellorPerformance } from "../controllers/counsellorController.js";
+import { getAllActiveCounsellors, getMyProfile, updateMyProfile, getAllCounsellors, getCounsellorById, getCounsellorPerformance, deleteCounsellor } from "../controllers/counsellorController.js";
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.use(protect);
 router.get("/performance", authorize("admin", "counsellor"), getCounsellorPerformance);
 router.get("/:id", getCounsellorById);
 
-
+router.delete("/:id", authorize("admin"), deleteCounsellor);    
 
 
 

@@ -233,3 +233,27 @@ export const getCounsellorPerformance = async (req, res) => {
     leads
   });
 };
+
+export const deleteCounsellor = async (req, res) => {
+  const counsellorId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(counsellorId)) {
+    return res.status(400).json({ success: false, message: "Invalid counsellor ID" });
+  }
+
+  const counsellor = await Counsellor.findById(counsellorId);
+  if (!counsellor) {
+    return res.status(404).json({ success: false, message: "Counsellor not found" });
+  }
+
+  const assignedLeadsCount = await Lead.countDocuments({ assignedCounsellor: counsellorId });
+  if (assignedLeadsCount > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Cannot delete counsellor with assigned leads. Please reassign or unassign the leads first."
+    });
+  }
+
+  await Counsellor.findByIdAndDelete(counsellorId);
+  res.json({ success: true, message: "Counsellor deleted successfully." });
+};  
