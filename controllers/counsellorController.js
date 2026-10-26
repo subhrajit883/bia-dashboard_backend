@@ -9,7 +9,7 @@ export const getMyProfile = async (req, res) => {
 };
 
 export const updateMyProfile = async (req, res) => {
-  const allowed = ["name", "phone"];
+  const allowed = ["name", "phone", "username"];
   const updates = {};
   for (const key of allowed) if (req.body[key] !== undefined) updates[key] = req.body[key];
   const data = await Counsellor.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true }).select("-password");
@@ -35,6 +35,7 @@ export const getAllCounsellors = async (req, res) => {
   const counsellors = await Counsellor.find().sort({ createdAt: -1 }).select("-password");
   res.json({ success: true, data: counsellors });
 };
+
 
 export const getCounsellorPerformance = async (req, res) => {
   const { from, to, startDate, endDate, dateFrom, dateTo, counsellor, counsellorId, course, courseId } = req.query;

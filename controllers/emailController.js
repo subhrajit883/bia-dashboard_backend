@@ -98,11 +98,6 @@ export const sendCandidateEmail = async (req, res) => {
     const leads = await Lead.find({ _id: { $in: lIds } }).populate("enrolledCourses enrolledCourse", "name");
     for (const lead of leads) {
       if (!lead.email) continue;
-      if (req.user.role === "counsellor" && String(lead.assignedCounsellor) !== String(req.user._id)) {
-        const error = new Error(`Access denied. Candidate '${lead.name}' is assigned to another counsellor.`);
-        error.statusCode = 403;
-        throw error;
-      }
       const courseName = lead.enrolledCourses?.map((c) => c.name).filter(Boolean).join(", ") || lead.enrolledCourse?.name || "";
       targets.push({
         type: "lead",
@@ -120,11 +115,6 @@ export const sendCandidateEmail = async (req, res) => {
     const students = await Student.find({ _id: { $in: sIds } }).populate("enrolledCourses enrolledCourse", "name");
     for (const student of students) {
       if (!student.email) continue;
-      if (req.user.role === "counsellor" && String(student.assignedCounsellor) !== String(req.user._id)) {
-        const error = new Error(`Access denied. Student '${student.name}' is assigned to another counsellor.`);
-        error.statusCode = 403;
-        throw error;
-      }
       const courseName = student.enrolledCourses?.map((c) => c.name).filter(Boolean).join(", ") || student.enrolledCourse?.name || "";
       targets.push({
         type: "student",
@@ -145,6 +135,7 @@ export const sendCandidateEmail = async (req, res) => {
   }
 
   const results = [];
+  const sentByModel = req.user.role === "admin" ? "Admin" : "Counsellor";
   for (const target of targets) {
     const values = {
       name: target.name,
@@ -166,6 +157,7 @@ export const sendCandidateEmail = async (req, res) => {
         subject: personalizedSubject,
         template: template?._id || null,
         sentBy: req.user._id,
+        sentByModel,
         status: "sent",
         providerMessageId: info.messageId
       });
@@ -176,6 +168,7 @@ export const sendCandidateEmail = async (req, res) => {
         subject: personalizedSubject,
         template: template?._id || null,
         sentBy: req.user._id,
+        sentByModel,
         status: "failed",
         errorMessage: error.message
       });
@@ -193,6 +186,7 @@ export const getEmailLogs = async (req, res) => {
   const [data, total] = await Promise.all([
     EmailLog.find(filter)
       .populate("template", "title")
+      .populate("sentBy", "name username email")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit),

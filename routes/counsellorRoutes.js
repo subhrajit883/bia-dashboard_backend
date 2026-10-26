@@ -6,7 +6,8 @@ import { getAllActiveCounsellors, getMyProfile, updateMyProfile, getAllCounsello
 const router = express.Router();
 
 
-router.get("/me", getMyProfile);
+router.get("/me", protect, authorize("counsellor"), getMyProfile);
+router.put("/me", protect, authorize("counsellor"), updateMyProfile);
 router.get("/all", getAllCounsellors);
 router.get("/all-active", getAllActiveCounsellors);
 
@@ -15,10 +16,5 @@ router.get("/performance", authorize("admin", "counsellor"), getCounsellorPerfor
 router.get("/:id", getCounsellorById);
 
 router.delete("/:id", authorize("admin"), deleteCounsellor);    
-
-
-
-router.put("/me", authorize("counsellor"), updateMyProfile);
-
 
 export default router;
