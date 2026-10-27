@@ -22,13 +22,13 @@ The conversion endpoint uses a transaction. A local standalone MongoDB server wi
 Send `Authorization: Bearer <token>` on protected requests. Login also sets an HTTP-only cookie.
 
 Login request:
-```json
+
 {
   "email": "admin@example.com",
   "password": "your-password",
   "role": "admin"
 }
-```
+
 For students, login by email is currently used by the shared login endpoint. Student ID login can be added by querying `s_id` instead; see note below.
 
 ## Main API endpoints
