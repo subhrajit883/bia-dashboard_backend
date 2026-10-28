@@ -1,7 +1,12 @@
+import { Agenda } from "agenda";
+import { MongoBackend } from "@agendajs/mongo-backend";
+import { mongoose } from "mongoose";
 import Lead from "../models/Lead.js";
 import "../models/Counsellor.js";
 import "../models/Course.js";
 import sendEmail from "./sendEmail.js";
+
+const FOLLOW_UP_REMINDER_JOB = "check pending follow-up reminders";
 
 export const checkPendingFollowUpReminders = async () => {
   try {
@@ -77,16 +82,34 @@ export const checkPendingFollowUpReminders = async () => {
     }
   } catch (error) {
     console.error("Error running checkPendingFollowUpReminders:", error.message);
+    throw error;
   }
 };
 
-export const initFollowUpScheduler = (intervalMinutes = 5) => {
-  setTimeout(() => {
-    checkPendingFollowUpReminders().catch(() => null);
-  }, 5000);
+export const initFollowUpScheduler = async (intervalMinutes = 5) => {
+  const mongoDb = mongoose.connection.db;
+  if (!mongoDb) {
+    throw new Error("Cannot initialize follow-up scheduler before MongoDB connects.");
+  }
 
-  const intervalMs = intervalMinutes * 60 * 1000;
-  setInterval(() => {
-    checkPendingFollowUpReminders().catch(() => null);
-  }, intervalMs);
+  const agenda = new Agenda({
+    backend: new MongoBackend({ mongo: mongoDb }),
+  });
+
+  agenda.define(FOLLOW_UP_REMINDER_JOB, async () => {
+    await checkPendingFollowUpReminders();
+  });
+  agenda.on("error", (error) => {
+    console.error("[FollowUpScheduler] Agenda error:", error.message);
+  });
+  agenda.on("fail", (error, job) => {
+    console.error(`[FollowUpScheduler] Job "${job.attrs.name}" failed:`, error.message);
+  });
+
+  await agenda.ready;
+  await agenda.every(`${intervalMinutes} minutes`, FOLLOW_UP_REMINDER_JOB);
+  await agenda.start();
+  console.log(`[FollowUpScheduler] Persistent reminder job scheduled every ${intervalMinutes} minutes.`);
+
+  return agenda;
 };

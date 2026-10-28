@@ -68,6 +68,7 @@ For students, login by email is currently used by the shared login endpoint. Stu
 | GET | `/api/reports/counsellor-performance/export` | Admin |
 
 ## Important implementation notes
+- Follow-up reminder checks are scheduled with Agenda and stored in MongoDB. They run every five minutes and are checked immediately when the backend starts, including after downtime; the backend process must be running for jobs to execute.
 - Counsellor registration creates an inactive account. Admin must activate it.
 - Admin alone can assign/reassign leads.
 - Counsellors can only view and update their assigned leads.
