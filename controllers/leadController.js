@@ -3,7 +3,7 @@ import Lead from "../models/Lead.js";
 import Source from "../models/Source.js";
 import Course from "../models/Course.js";
 import Counsellor from "../models/Counsellor.js";
-import { checkPendingFollowUpReminders } from "../utils/followUpScheduler.js";
+import { checkPendingFollowUpReminders, scheduleFollowUpReminder } from "../utils/followUpScheduler.js";
 
 const escapeRegex = (string = "") => {
   return String(string).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -381,18 +381,15 @@ export const addFollowUp = async (req, res) => {
   lead.updatedBy = req.user._id;
   await lead.save();
 
-  if (nextCallDate && new Date(nextCallDate) <= new Date()) {
-    try {
-      await checkPendingFollowUpReminders();
-    } catch (err) {
-      console.error("Error executing immediate follow-up reminder check:", err.message);
-    }
+  const latestRemark = lead.remarks.at(-1);
+  if (latestRemark?.nextCallDate) {
+    await scheduleFollowUpReminder(lead._id, latestRemark._id, latestRemark.nextCallDate);
   }
 
   const updatedLead = await Lead.findById(lead._id);
-  const latestRemark = updatedLead?.remarks?.at(-1) || lead.remarks.at(-1);
+  const savedRemark = updatedLead?.remarks?.at(-1) || latestRemark;
 
-  res.status(201).json({ success: true, message: "Follow-up added successfully.", data: latestRemark });
+  res.status(201).json({ success: true, message: "Follow-up added successfully.", data: savedRemark });
 };
 
 export const triggerFollowUpReminders = async (req, res) => {
@@ -677,4 +674,3 @@ export const getUnapprovedClosedLeads = async (req, res) => {
     data
   });
 };
-
