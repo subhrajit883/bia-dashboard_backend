@@ -23,11 +23,9 @@ export const createTemplate = async (req, res) => {
 };
 
 export const getTemplates = async (req, res) => {
-  const filter = 
-  // req.user.role === "admin"
-  //   ? {}
-  //   :
-    { $or: [{ createdBy: req.user._id }, { isActive: true, isDraft: false }] };
+  const filter = req.user.role === "admin"
+    ? {}
+    : { $or: [{ createdBy: req.user._id }, { isActive: true, isDraft: false }] };
   const data = await EmailTemplate.find(filter).sort({ createdAt: -1 }).populate("createdBy", "name email username").populate("updatedBy", "name email username");
   res.json({ success: true, count: data.length, data });
 };
