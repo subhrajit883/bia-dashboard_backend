@@ -78,7 +78,7 @@ const startServer = async () => {
   await connectDB();
   await initFollowUpScheduler(5);
 
-  const port = process.env.PORT || 5000;
+  const port = process.env.PORT || 8080;
   app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV || "development"} mode on port ${port}`));
 };
 
