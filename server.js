@@ -48,7 +48,7 @@ app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "Academy Management API is running.", timestamp: new Date().toISOString() });
+  res.json({ success: true, message: "Academy Management API is running testing phase-1.", timestamp: new Date().toISOString() });
 });
 
 const authLimiter = rateLimit({
